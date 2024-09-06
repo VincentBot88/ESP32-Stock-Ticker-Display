@@ -1,30 +1,33 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 
-// Initialize the LCD (Pins might need adjustment based on your wiring)
-const int rs = 13, en = 12, d4 = 14, d5 = 27, d6 = 26, d7 = 25;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+// Set the I2C LCD address, columns, and rows
+const int lcdColumns = 16;
+const int lcdRows = 2;
+LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);  // 0x27 is a common I2C address; change it if needed
 
-const int greenLED = 32;
-const int redLED = 33;
-const int buttonPin = 35;  // Button connected to pin 35
+const int greenLED = 12;
+const int redLED = 13;
+const int buttonPin = 14;  // Button connected to pin 14
 
-const char* ssid = "WIFI SSID";
-const char* password = "WIFI PASSWORD";
+const char* ssid = "meshAirsonics_LVK7";
+const char* password = "fdhhcc8884";
 String payload = "";
 
-String stockSymbols[] = {"AAPL", "AMZN", "TSLA", "MSFT", "PFE", "OXY", "EBAY", "FDX"};
+String stockSymbols[] = { "AAPL", "AMZN", "TSLA", "MSFT", "PFE", "OXY", "EBAY", "FDX" };
 int currentStockIndex = 0;
 
 unsigned long previousMillis = 0;
 const long interval = 5000;  // 5 seconds interval
 
 void setup() {
-  lcd.begin(16, 2);
+  // Initialize the LCD and backlight
+  lcd.init();
+  lcd.backlight();
 
-  // Create custom characters
+  // Create custom characters (optional, but leaving it here)
   byte upArrow[] = {
     B00000,
     B00000,
@@ -46,7 +49,7 @@ void setup() {
     B00000,
     B00000
   };
-  
+
   lcd.createChar(0, upArrow);
   lcd.createChar(1, downArrow);
 
@@ -69,7 +72,6 @@ void connectWiFi() {
     delay(500);
   }
 
-  lcd.begin(16, 2);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Connected to");
@@ -101,7 +103,7 @@ void readPrice(const String& stockName) {
 
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print(stockName + " " + currentPrice);
+    lcd.print(stockName + " " + String(currentPrice));
     lcd.setCursor(0, 1);
 
     // Display the appropriate LED and text
@@ -113,10 +115,8 @@ void readPrice(const String& stockName) {
       digitalWrite(greenLED, LOW);
     }
 
-    lcd.print(differenceInPrice);
-    lcd.print(" ");
-    lcd.print(differenceInPricePercent);
-    lcd.print("%");
+    lcd.print(String(differenceInPrice, 2) + " ");
+    lcd.print(String(differenceInPricePercent, 2) + "%");
 
   } else {
     lcd.clear();
@@ -144,9 +144,9 @@ void loop() {
   }
 
   // Check if the button is pressed to manually switch the stock
-  if (digitalRead(buttonPin) == HIGH) {
-    delay(50);  // Debounce delay
-    if (digitalRead(buttonPin) == HIGH) {  // Confirm button is still pressed
+  if (digitalRead(buttonPin) == LOW) {    // Adjusted button logic for better handling
+    delay(50);                            // Debounce delay
+    if (digitalRead(buttonPin) == LOW) {  // Confirm button is still pressed
       // Turn off LEDs before switching stocks
       digitalWrite(greenLED, LOW);
       digitalWrite(redLED, LOW);
