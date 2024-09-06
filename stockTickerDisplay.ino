@@ -11,8 +11,8 @@ const int greenLED = 32;
 const int redLED = 33;
 const int buttonPin = 35;  // Button connected to pin 35
 
-const char* ssid = "FASTED";
-const char* password = "379377ED";
+const char* ssid = "WIFI SSID";
+const char* password = "WIFI PASSWORD";
 String payload = "";
 
 String stockSymbols[] = {"AAPL", "AMZN", "TSLA", "MSFT", "PFE", "OXY", "EBAY", "FDX"};
